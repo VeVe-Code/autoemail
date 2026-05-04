@@ -42,8 +42,11 @@ const env = {
 
   pleskMaxRetries: Number(process.env.PLESK_MAX_RETRIES || 3),
   pleskRetryBaseDelayMs: Number(process.env.PLESK_RETRY_BASE_DELAY_MS || 500),
+  // Render/production has no X server, so browser automation must be headless by default.
   pleskBrowserHeadless: String(
-    process.env.PLESK_BROWSER_HEADLESS || (process.env.VERCEL ? "true" : "false")
+    process.env.PLESK_BROWSER_HEADLESS ||
+      process.env.HEADLESS ||
+      (process.env.NODE_ENV === "production" || process.env.RENDER ? "true" : "false")
   ).toLowerCase() === "true",
   pleskBrowserSlowMoMs: Number(process.env.PLESK_BROWSER_SLOWMO_MS || 120),
   pleskBrowserVisualPauseMs: Number(process.env.PLESK_BROWSER_VISUAL_PAUSE_MS || 1200),
