@@ -8,9 +8,14 @@ function App() {
     typeof window !== "undefined" &&
     (window.location.hostname.endsWith(".vercel.app") ||
       window.location.hostname.includes("vercel"));
+  const isRender =
+    typeof window !== "undefined" && window.location.hostname.endsWith(".onrender.com");
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
   const remembered = localStorage.getItem(REMEMBER_KEY) === "true";
   const [form, setForm] = useState({
-    mode: isVercel ? "api" : "browser",
+    mode: isVercel || isRender ? "api" : "browser",
     pleskHost: "",
     pleskUsername: remembered ? localStorage.getItem(STORED_USERNAME_KEY) || "" : "",
     pleskPassword: "",
@@ -161,6 +166,20 @@ function App() {
                 <option value="browser">browser automation</option>
                 <option value="api">plesk api</option>
               </select>
+              {isRender ? (
+                <span className="mt-1 block text-xs text-slate-500">
+                  Hosted demo defaults to <strong>Plesk API</strong> (fast/reliable). Browser mode runs
+                  headlessly — you will not see a live browser window. For full UI performance testing,
+                  run locally or use Docker (<code className="rounded bg-slate-100 px-1">npm run docker:up</code>
+                  ).
+                </span>
+              ) : null}
+              {isLocalhost ? (
+                <span className="mt-1 block text-xs text-slate-500">
+                  Local testing: use <strong>browser automation</strong> to match interactive Plesk UI
+                  behavior, or <strong>Plesk API</strong> for fastest production-like runs.
+                </span>
+              ) : null}
             </label>
 
             <label className="text-sm text-slate-700">
