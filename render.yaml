@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: autoemail
+    env: node
+    plan: starter
+    region: singapore
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Add the rest in Render dashboard (from your .env)

@@ -61,6 +61,26 @@ This repo is set up for a **single Vercel project** (no separate frontend projec
 
 Local production-style check: from the repo root, run `npm run vercel-build`, then `npm start` and open `http://localhost:3000` (API and static UI both on the Express port).
 
+## Deploy to Render (recommended for browser automation)
+
+Vercel is serverless, so long-running background jobs and Playwright session reuse are not reliable there.
+Render runs an always-on Node server, so the **local-style automation flow** works much more consistently.
+
+1. Create a new **Web Service** in Render and connect your GitHub repo.
+2. Use these commands:
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm start`
+3. Add Environment Variables in Render (from `.env.example` / your local `.env`):
+   - `MONGODB_URI`
+   - `DOMAIN`
+   - `PLESK_HOST`
+   - `PLESK_AUTH_METHOD` (`plain` or `key`)
+   - `PLESK_USERNAME` / `PLESK_PASSWORD` (if `plain`)
+   - `PLESK_KEY` (if `key`)
+4. Deploy, then open:
+   - `GET /health`
+   - `/` (dashboard UI)
+
 ## Quick Start
 
 1. Install dependencies:
