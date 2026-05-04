@@ -7,7 +7,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     outDir: '../public',
-    emptyOutDir: true
+    // Keep previous hashed bundles so cached HTML doesn't 404 after redeploys.
+    emptyOutDir: false
   },
   server: {
     proxy: {
