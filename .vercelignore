@@ -1,0 +1,9 @@
+node_modules/
+frontend/node_modules/
+.env
+.env.*
+playwright-last-error.png
+test-browser.js
+
+# Built output (generated during build)
+public/
