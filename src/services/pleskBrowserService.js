@@ -351,7 +351,7 @@ async function createMailboxViaBrowser(
   if (!page) {
     ensurePlaywrightChromiumInstalled();
     browser = await getChromium().launch({
-      headless: env.pleskBrowserHeadless,
+      headless: process.env.RENDER ? true : env.pleskBrowserHeadless,
       slowMo: env.pleskBrowserSlowMoMs > 0 ? env.pleskBrowserSlowMoMs : undefined
     });
     context = await browser.newContext({ ignoreHTTPSErrors: true });
