@@ -8,7 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+public
 dist
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
 dist-ssr
 *.local
 

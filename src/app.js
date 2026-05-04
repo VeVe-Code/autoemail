@@ -1,5 +1,6 @@
 const cors = require("cors");
 const express = require("express");
+const { connectDb } = require("./config/db");
 const provisioningRoutes = require("./routes/provisioningRoutes");
 const logger = require("./utils/logger");
 
@@ -12,6 +13,19 @@ app.use(
     credentials: false
   })
 );
+
+let dbReady;
+app.use(async (_req, _res, next) => {
+  try {
+    if (!dbReady) {
+      dbReady = connectDb();
+    }
+    await dbReady;
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

@@ -49,6 +49,18 @@ This project provisions **real mailboxes** on infrastructure you control via **P
         └── index.css
 ```
 
+## Deploy to Vercel
+
+This repo is set up for a **single Vercel project** (no separate frontend project):
+
+1. **Import the Git repository** in the [Vercel dashboard](https://vercel.com/new) and use the repository root as the project root (default).
+2. **Install + build**: `vercel.json` runs `npm install && cd frontend && npm install`, then `npm run vercel-build`, which builds the Vite app into the root `public/` folder. Vercel serves those files from the CDN and runs the Express app from `src/app.js` for routes that are not static files (for example `POST /api/provision` and `GET /health`).
+3. **Environment variables**: In the Vercel project **Settings → Environment Variables**, add every variable from [`.env.example`](./.env.example) that you use locally (`MONGODB_URI`, `DOMAIN`, `PLESK_*`, and so on). Production builds do not read a committed `.env` file.
+4. **MongoDB**: Serverless functions use changing outbound IPs. With MongoDB Atlas, either allow access from anywhere for the deployment user (typical for this pattern) or use a network setup that fits your security model.
+5. **Function duration**: Provisioning can take a while. `vercel.json` sets `maxDuration` to **60 seconds** for `src/app.js`. On the Hobby plan, Vercel may cap this lower; upgrade or keep `count` small if you hit timeouts.
+
+Local production-style check: from the repo root, run `npm run vercel-build`, then `npm start` and open `http://localhost:3000` (API and static UI both on the Express port).
+
 ## Quick Start
 
 1. Install dependencies:
