@@ -1,23 +1,32 @@
 const childProcess = require("child_process");
-process.env.PLAYWRIGHT_BROWSERS_PATH = "0";
-const { chromium } = require("playwright");
 const env = require("../config/env");
 
 let playwrightBrowserReady = false;
+let chromium;
 
 function ensurePlaywrightChromiumInstalled() {
   if (playwrightBrowserReady) {
     return;
   }
+  process.env.PLAYWRIGHT_BROWSERS_PATH = "0";
   const installEnv = {
     ...process.env,
-    PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH || "0"
+    PLAYWRIGHT_BROWSERS_PATH: "0"
   };
   childProcess.execSync("npx playwright install chromium", {
     stdio: "inherit",
     env: installEnv
   });
   playwrightBrowserReady = true;
+}
+
+function getChromium() {
+  process.env.PLAYWRIGHT_BROWSERS_PATH = "0";
+  if (!chromium) {
+    delete require.cache[require.resolve("playwright")];
+    ({ chromium } = require("playwright"));
+  }
+  return chromium;
 }
 
 function debugLog(hypothesisId, location, message, data = {}) {
@@ -341,7 +350,7 @@ async function createMailboxViaBrowser(
 
   if (!page) {
     ensurePlaywrightChromiumInstalled();
-    browser = await chromium.launch({
+    browser = await getChromium().launch({
       headless: env.pleskBrowserHeadless,
       slowMo: env.pleskBrowserSlowMoMs > 0 ? env.pleskBrowserSlowMoMs : undefined
     });

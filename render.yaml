@@ -11,6 +11,4 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PLAYWRIGHT_BROWSERS_PATH
-        value: "0"
       # Add the rest in Render dashboard (from your .env)
