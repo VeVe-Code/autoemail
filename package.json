@@ -4,10 +4,13 @@
   "description": "Safe starter for automating test account provisioning on owned systems",
   "main": "src/server.js",
   "type": "commonjs",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "postinstall": "npm --prefix frontend install && node -e \"const cp=require('child_process'); const env={...process.env, PLAYWRIGHT_BROWSERS_PATH:'0'}; cp.execSync('npx playwright install --with-deps chromium', {stdio:'inherit', env});\"",
+    "postinstall": "npm --prefix frontend install && node -e \"const cp=require('child_process'); const env={...process.env, PLAYWRIGHT_BROWSERS_PATH:'0'}; cp.execSync('npx playwright install chromium', {stdio:'inherit', env});\"",
     "build": "npm run vercel-build",
     "vercel-build": "cd frontend && npm run build"
   },
