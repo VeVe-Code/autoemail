@@ -7,8 +7,23 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     outDir: '../public',
-    // Keep previous hashed bundles so cached HTML doesn't 404 after redeploys.
-    emptyOutDir: false
+    // Always deploy a clean public/ directory.
+    emptyOutDir: true,
+    // Avoid hashed filenames so cached HTML won't 404.
+    cssCodeSplit: false,
+    rollupOptions: {
+      output: {
+        // Single JS bundle with stable path.
+        inlineDynamicImports: true,
+        entryFileNames: 'assets/app.js',
+        chunkFileNames: 'assets/app.js',
+        assetFileNames: (assetInfo) => {
+          const name = assetInfo?.name || 'asset';
+          if (name.endsWith('.css')) return 'assets/app.css';
+          return `assets/${name}`;
+        }
+      }
+    }
   },
   server: {
     proxy: {
