@@ -4,9 +4,13 @@ const REMEMBER_KEY = "pleskUsernameRemembered";
 const STORED_USERNAME_KEY = "pleskUsername";
 
 function App() {
+  const isVercel =
+    typeof window !== "undefined" &&
+    (window.location.hostname.endsWith(".vercel.app") ||
+      window.location.hostname.includes("vercel"));
   const remembered = localStorage.getItem(REMEMBER_KEY) === "true";
   const [form, setForm] = useState({
-    mode: "browser",
+    mode: isVercel ? "api" : "browser",
     pleskHost: "",
     pleskUsername: remembered ? localStorage.getItem(STORED_USERNAME_KEY) || "" : "",
     pleskPassword: "",
@@ -116,8 +120,13 @@ function App() {
       });
 
       const data = await readJsonOrThrow(response, "Provisioning start failed");
-      setRequestId(data.requestId);
-      await pollStatus(data.requestId);
+      setRequestId(data.requestId || "");
+      if (data.result || data.status === "completed") {
+        setLogs(data.logs || []);
+        setResult(data.result || null);
+      } else {
+        await pollStatus(data.requestId);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -327,7 +336,11 @@ function App() {
               disabled={loading}
               className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Provisioning..." : "Start Provisioning (Async)"}
+              {loading
+                ? "Provisioning..."
+                : isVercel
+                  ? "Start Provisioning"
+                  : "Start Provisioning (Async)"}
             </button>
             <span className="text-xs text-slate-500">
               API:

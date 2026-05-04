@@ -125,6 +125,32 @@ async function startProvisioningJob(req, res, next) {
     }
 
     const payload = req.body || {};
+
+    // Vercel serverless does not support reliable in-memory background jobs.
+    // Run synchronously and return logs + result in the same response.
+    if (process.env.VERCEL) {
+      const requestId = require("uuid").v4();
+      const logs = [];
+      const pushLog = (line) => {
+        logs.push(`[${new Date().toISOString()}] ${line}`);
+        if (logs.length > 1000) logs.splice(0, logs.length - 1000);
+      };
+
+      pushLog("Job started (synchronous on Vercel).");
+      const result = await provisionAccounts({
+        ...payload,
+        onLog: pushLog
+      });
+      pushLog("Job completed.");
+
+      return res.status(201).json({
+        requestId,
+        status: "completed",
+        logs,
+        result
+      });
+    }
+
     const job = createJob({ input: payload });
     appendLog(job.requestId, "Job accepted by server.");
 
