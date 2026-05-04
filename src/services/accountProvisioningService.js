@@ -80,6 +80,9 @@ async function provisionAccounts({
             mailname: user.username,
             mailboxPassword: user.password
           }, { session: browserSession });
+          if (pleskResult && pleskResult.traceUrl) {
+            onLog(`Playwright trace: open ${pleskResult.traceUrl} (download zip, replay locally in Trace Viewer)`);
+          }
         } else {
           pleskResult = await createMailbox(
             {
@@ -169,6 +172,11 @@ async function provisionAccounts({
   } finally {
     if (browserSession) {
       await closeBrowserSession(browserSession);
+      if (browserSession.tracePublicUrl) {
+        onLog(
+          `Playwright trace: open ${browserSession.tracePublicUrl} (download zip, replay locally in Trace Viewer)`
+        );
+      }
     }
   }
 

@@ -29,3 +29,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Runtime artifacts (Playwright traces, etc.)
+artifacts

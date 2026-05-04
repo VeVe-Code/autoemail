@@ -44,6 +44,16 @@ app.use((req, res, next) => {
 const publicDir = path.join(process.cwd(), "public");
 app.use(express.static(publicDir));
 
+const artifactsRoot = path.join(process.cwd(), "artifacts");
+app.use(
+  "/playwright-artifacts",
+  express.static(artifactsRoot, {
+    setHeaders: (res) => {
+      res.setHeader("Cache-Control", "no-store");
+    }
+  })
+);
+
 // Prevent stale HTML from referencing old hashed assets after redeploy.
 app.use((req, res, next) => {
   const requestPath = req.path || "";

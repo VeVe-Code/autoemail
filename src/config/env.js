@@ -50,7 +50,13 @@ const env = {
   ).toLowerCase() === "true",
   pleskBrowserSlowMoMs: Number(process.env.PLESK_BROWSER_SLOWMO_MS || 120),
   pleskBrowserVisualPauseMs: Number(process.env.PLESK_BROWSER_VISUAL_PAUSE_MS || 1200),
-  pleskBrowserTypeDelayMs: Number(process.env.PLESK_BROWSER_TYPE_DELAY_MS || 70)
+  pleskBrowserTypeDelayMs: Number(process.env.PLESK_BROWSER_TYPE_DELAY_MS || 70),
+
+  // Optional Playwright trace zip for debugging UI flows on headless servers (Replay locally in Trace Viewer).
+  pleskBrowserTrace: String(
+    process.env.PLESK_BROWSER_TRACE || (process.env.RENDER ? "true" : "false")
+  ).toLowerCase() === "true",
+  pleskBrowserTraceDir: process.env.PLESK_BROWSER_TRACE_DIR || "artifacts/playwright-traces"
 };
 
 module.exports = env;

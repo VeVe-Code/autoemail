@@ -1,4 +1,6 @@
 const childProcess = require("child_process");
+const fs = require("fs");
+const path = require("path");
 const env = require("../config/env");
 
 let playwrightBrowserReady = false;
@@ -322,6 +324,16 @@ async function closeBrowserSession(session) {
     return;
   }
   try {
+    if (session.traceStarted && session.context && session.tracePath) {
+      try {
+        await session.context.tracing.stop({ path: session.tracePath });
+        console.log(`[Playwright trace] saved: ${session.tracePath}`);
+      } catch (error) {
+        console.log(`[Playwright trace] stop failed: ${error.message}`);
+      } finally {
+        session.traceStarted = false;
+      }
+    }
     if (session.context) {
       await session.context.close();
     }
@@ -339,6 +351,27 @@ async function closeBrowserSession(session) {
   }
 }
 
+function startBrowserTrace(context) {
+  if (!env.pleskBrowserTrace) {
+    return null;
+  }
+
+  const traceDir = path.join(process.cwd(), env.pleskBrowserTraceDir);
+  fs.mkdirSync(traceDir, { recursive: true });
+  const traceFile = path.join(traceDir, `trace-${Date.now()}.zip`);
+  const tracePublicUrl = `/playwright-artifacts/${path
+    .relative(path.join(process.cwd(), "artifacts"), traceFile)
+    .replace(/\\/g, "/")}`;
+
+  context.tracing.start({
+    screenshots: true,
+    snapshots: true,
+    sources: false
+  });
+
+  return { traceFile, tracePublicUrl };
+}
+
 async function createMailboxViaBrowser(
   { host, username, password, domain, mailname, mailboxPassword },
   { timeoutMs = 30000, session = null } = {}
@@ -347,6 +380,8 @@ async function createMailboxViaBrowser(
   let browser = usingSharedSession ? session.browser : null;
   let context = usingSharedSession ? session.context : null;
   let page = usingSharedSession ? session.page : null;
+  let localTracePath = null;
+  let localTracePublicPath = null;
 
   if (!page) {
     ensurePlaywrightChromiumInstalled();
@@ -355,6 +390,20 @@ async function createMailboxViaBrowser(
       slowMo: env.pleskBrowserSlowMoMs > 0 ? env.pleskBrowserSlowMoMs : undefined
     });
     context = await browser.newContext({ ignoreHTTPSErrors: true });
+    if (!usingSharedSession) {
+      const traceMeta = startBrowserTrace(context);
+      if (traceMeta) {
+        localTracePath = traceMeta.traceFile;
+        localTracePublicPath = traceMeta.tracePublicUrl;
+      }
+    } else if (!session.traceStarted) {
+      const traceMeta = startBrowserTrace(context);
+      if (traceMeta) {
+        session.tracePath = traceMeta.traceFile;
+        session.tracePublicUrl = traceMeta.tracePublicUrl;
+        session.traceStarted = true;
+      }
+    }
     page = await context.newPage();
 
     if (usingSharedSession) {
@@ -633,7 +682,7 @@ async function createMailboxViaBrowser(
     await page.waitForLoadState("domcontentloaded", { timeout: timeoutMs });
     await page.waitForTimeout(1000);
 
-    return { ok: true };
+    return { ok: true, traceUrl: localTracePublicPath };
   } catch (error) {
     try {
       await page.screenshot({ path: "playwright-last-error.png", fullPage: true });
@@ -643,6 +692,14 @@ async function createMailboxViaBrowser(
     throw error;
   } finally {
     if (!usingSharedSession) {
+      if (localTracePath && context) {
+        try {
+          await context.tracing.stop({ path: localTracePath });
+          console.log(`[Playwright trace] saved: ${localTracePath}`);
+        } catch (error) {
+          console.log(`[Playwright trace] stop failed: ${error.message}`);
+        }
+      }
       await context.close();
       await browser.close();
     }
