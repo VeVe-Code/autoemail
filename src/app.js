@@ -44,6 +44,16 @@ app.use((req, res, next) => {
 const publicDir = path.join(process.cwd(), "public");
 app.use(express.static(publicDir));
 
+// Prevent stale HTML from referencing old hashed assets after redeploy.
+app.use((req, res, next) => {
+  const requestPath = req.path || "";
+  const isHtmlEntry = requestPath === "/" || requestPath.endsWith(".html");
+  if (isHtmlEntry) {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  }
+  next();
+});
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });

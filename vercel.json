@@ -1,11 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run vercel-build",
-  "installCommand": "npm install && cd frontend && npm install",
   "functions": {
     "src/app.js": {
       "maxDuration": 60,
       "includeFiles": "public/**"
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/src/app.js" },
+    { "source": "/health", "destination": "/src/app.js" }
+  ]
 }
